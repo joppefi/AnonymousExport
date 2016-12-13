@@ -1,0 +1,21 @@
+.qv-object-AnonymousExport div.qv-object-content-container {
+	overflow: auto;
+}
+.qv-object-AnonymousExport td,
+.qv-object-AnonymousExport th {
+	border-top: 0px solid #fff;
+	border-bottom: 1px solid #ddd;
+	border-right: 1px solid #ddd;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	vertical-align: middle;
+	cursor: default;
+	font-size: 12px;
+}
+.qv-object-AnonymousExport td.numeric {
+	text-align: right;
+}
+.qv-object-AnonymousExport button {
+	width: 100%;
+}
