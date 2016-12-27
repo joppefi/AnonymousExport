@@ -1,4 +1,4 @@
-define(["qlik", "jquery", "text!./style.css", "text!./template.html"], function (qlik, $, cssContent, template) {
+define(["qlik", "jquery", "text!./style.css", "text!./template.html", "./js/excel-builder.compiled"], function (qlik, $, cssContent, template, excelbuilder) {
 	'use strict';
 	$("<style>").html(cssContent).appendTo("head");
 	return {
