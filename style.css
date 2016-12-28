@@ -20,3 +20,13 @@
 	width: 100%;
 	margin: 3px 0;
 }
+
+.xls:hover {
+	background-color: #207245;
+	color: #FFF;
+}
+
+.csv:hover {
+	background-color: #204572;
+	color: #FFF;
+}
