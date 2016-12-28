@@ -124,7 +124,8 @@ define(["qlik", "jquery", "text!./style.css", "text!./template.html", "xlsx", ".
 						if (matriisi[i][j].qNum == "NaN") {
 							rivi.push(matriisi[i][j].qText);
 						} else {
-							rivi.push(parseFloat(matriisi[i][j].qText));
+							//rivi.push(parseFloat(matriisi[i][j].qText)); //Antaa NaN jos formatointi on Sensessä väärin
+							rivi.push(matriisi[i][j].qText);
 						}
 					}
 					taulukko.push(rivi);
