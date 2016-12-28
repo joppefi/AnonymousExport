@@ -71,11 +71,7 @@ define(["qlik", "jquery", "text!./style.css", "text!./template.html", "xlsx", ".
 
 
 
-			$scope.export = function () {
-				console.log(requirejs.config());
-				console.log('movoo ', qlik.table(this).qHyperCube);
-
-
+			$scope.exportCSV = function () {
 				/**
 				 * Tehdään Hypercubesta CSV
 				 */
@@ -102,13 +98,22 @@ define(["qlik", "jquery", "text!./style.css", "text!./template.html", "xlsx", ".
 				var taulukkoCSV = taulukkoCSVtemp.join("\r\n");
 
 
-
 				/**
-				 * Excel Builderin kokeilua
+				 * Pusketaan CSV käyttäjälle
 				 */
 
+				window.open(encodeURI("data:text/csv;charset=utf-8," + taulukkoCSV));
+			}
+
+			$scope.exportXLS = function () {
+				/**
+				 * Tehdään hypercubesta taulukko
+				 */
+				var matriisi = qlik.table(this).qHyperCube.qDataPages[0].qMatrix;
+				var dimensiot = qlik.table(this).qHyperCube.qDimensionInfo;
+				var measuret = qlik.table(this).qHyperCube.qMeasureInfo;
 				var taulukko = [];
-				otsikko = [];
+				var otsikko = [];
 				for (var i = 0; i < dimensiot.length; i++) { otsikko.push(dimensiot[i].title) }
 				for (var i = 0; i < measuret.length; i++) { otsikko.push(measuret[i].qFallbackTitle) }
 				taulukko.push(otsikko);
@@ -125,6 +130,9 @@ define(["qlik", "jquery", "text!./style.css", "text!./template.html", "xlsx", ".
 					taulukko.push(rivi);
 				}
 
+				/**
+				 * Luodaan Excel
+				 */
 				var workbook = ExcelBuilder.Builder.createWorkbook();
 				var worksheet = workbook.createWorksheet({ name: 'Data' });
 				var stylesheet = workbook.getStyleSheet();
@@ -132,17 +140,12 @@ define(["qlik", "jquery", "text!./style.css", "text!./template.html", "xlsx", ".
 				worksheet.setData(taulukko);
 				workbook.addWorksheet(worksheet);
 
+				/**
+				 * Pusketaan Excel käyttäjälle
+				 */
 				ExcelBuilder.Builder.createFile(workbook).then(function (data) {
 					window.open(encodeURI("data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64," + data));
 				});
-
-				/**
-				 * Pusketaan CSV käyttäjälle
-				 */
-
-				//window.open(encodeURI("data:text/csv;charset=utf-8," + taulukkoCSV));
-
-
 			}
 
 		}]
