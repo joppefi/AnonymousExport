@@ -6,7 +6,7 @@
 	"version": "1.0.1",
 	"author": "Joel Tolvanen",
 	"homepage": "",
-	"keywords": "qlik-sense, visualization",
+	"keywords": "qlik-sense, visualization, export",
 	"license": "",
 	"repository": "",
 	"dependencies": {

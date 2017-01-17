@@ -144,8 +144,16 @@ define(["qlik", "jquery", "text!./style.css", "text!./template.html", "xlsx", ".
 				/**
 				 * Pusketaan Excel käyttäjälle
 				 */
+
+/*				$("#anonymous-xls-dl").attr({
+                            href: "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,"+ data
+});*/
+
 				ExcelBuilder.Builder.createFile(workbook).then(function (data) {
-					window.open(encodeURI("data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64," + data));
+					//window.open(encodeURI("data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64," + data));
+					$("#anonymous-xls-dl").attr({
+                            href: "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,"+ data
+});
 				});
 			}
 

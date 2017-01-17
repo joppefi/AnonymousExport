@@ -8,7 +8,7 @@ require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requ
  */
 /* eslint-disable no-proto */
 
-'use strict'
+//'use strict'
 
 var base64 = require('base64-js')
 var ieee754 = require('ieee754')
@@ -4552,9 +4552,9 @@ var SheetView = require('./SheetView');
          * @param {String} orientation
          * @returns {undefined}
          */
-        setPageOrientation: function (orientation) {
+        /*setPageOrientation: function (orientation) {
             this._orientation = orientation;
-        },
+        },*/
         
         /**
          * Expects an array of column definitions. Each column definition needs to have a width assigned to it. 
