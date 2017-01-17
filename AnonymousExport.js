@@ -80,7 +80,7 @@ define(["qlik", "jquery", "text!./style.css", "text!./template.html", "xlsx", ".
 				var measuret = qlik.table(this).qHyperCube.qMeasureInfo;
 				var taulukkoCSVtemp = [];
 				var otsikko = [];
-				for (var i = 0; i < dimensiot.length; i++) { otsikko.push(dimensiot[i].title) }
+				for (var i = 0; i < dimensiot.length; i++) { otsikko.push(dimensiot[i].qFallbackTitle) }
 				for (var i = 0; i < measuret.length; i++) { otsikko.push(measuret[i].qFallbackTitle) }
 				taulukkoCSVtemp.push(otsikko.join(","));
 
@@ -102,7 +102,14 @@ define(["qlik", "jquery", "text!./style.css", "text!./template.html", "xlsx", ".
 				 * Pusketaan CSV käyttäjälle
 				 */
 
-				window.open(encodeURI("data:text/csv;charset=utf-8," + taulukkoCSV));
+				var csvBlob = new Blob([taulukkoCSV], { type: 'text/csv' });
+
+
+				if (window.navigator.msSaveOrOpenBlob) {  // IE:tä varten
+					window.navigator.msSaveBlob(csvBlob, 'data.csv');
+				} else {
+					download(csvBlob, "data.CSV", 'text/csv');
+				}
 			}
 
 			$scope.exportXLS = function () {
@@ -114,7 +121,9 @@ define(["qlik", "jquery", "text!./style.css", "text!./template.html", "xlsx", ".
 				var measuret = qlik.table(this).qHyperCube.qMeasureInfo;
 				var taulukko = [];
 				var otsikko = [];
-				for (var i = 0; i < dimensiot.length; i++) { otsikko.push(dimensiot[i].title) }
+
+
+				for (var i = 0; i < dimensiot.length; i++) { otsikko.push(dimensiot[i].qFallbackTitle) }
 				for (var i = 0; i < measuret.length; i++) { otsikko.push(measuret[i].qFallbackTitle) }
 				taulukko.push(otsikko);
 
@@ -145,16 +154,40 @@ define(["qlik", "jquery", "text!./style.css", "text!./template.html", "xlsx", ".
 				 * Pusketaan Excel käyttäjälle
 				 */
 
-/*				$("#anonymous-xls-dl").attr({
-                            href: "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,"+ data
-});*/
-
 				ExcelBuilder.Builder.createFile(workbook).then(function (data) {
-					//window.open(encodeURI("data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64," + data));
-					$("#anonymous-xls-dl").attr({
-                            href: "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,"+ data
-});
+
+					var dataBlob = b64toBlob(data, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+					if (window.navigator.msSaveOrOpenBlob) {  // IE:tä varten
+						window.navigator.msSaveBlob(dataBlob, 'data.xlsx');
+					} else {
+						download(dataBlob, "data.xlsx", 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+					}
+
 				});
+			}
+
+			function b64toBlob(b64Data, contentType, sliceSize) {
+				contentType = contentType || '';
+				sliceSize = sliceSize || 512;
+
+				var byteCharacters = atob(b64Data);
+				var byteArrays = [];
+
+				for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+					var slice = byteCharacters.slice(offset, offset + sliceSize);
+
+					var byteNumbers = new Array(slice.length);
+					for (var i = 0; i < slice.length; i++) {
+						byteNumbers[i] = slice.charCodeAt(i);
+					}
+
+					var byteArray = new Uint8Array(byteNumbers);
+
+					byteArrays.push(byteArray);
+				}
+
+				var blob = new Blob(byteArrays, { type: contentType });
+				return blob;
 			}
 
 		}]
