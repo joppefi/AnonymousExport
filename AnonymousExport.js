@@ -70,179 +70,113 @@ define(["qlik", "jquery", "text!./style.css", "text!./template.html", "xlsx", ".
 		controller: ['$scope', function ($scope) {
 
 
-			/**
-			 * Hoitaa CSV -exportin
-			 */
+
 			$scope.exportCSV = function () {
 
-				var self = this;
-				var hypercube = qlik.table(this).qHyperCube;
-				var rowcount = hypercube.qDataPages[0].qMatrix.length;
-				var colcount = hypercube.qDimensionInfo.length + hypercube.qMeasureInfo.length;
+				fetchAllData(this, qlik.table(this), 0, function (table) {
+					/**
+					 * Tehdään Hypercubesta CSV
+					 */
 
-				var requestPage = [{
-					qTop: rowcount,
-					qLeft: 0,
-					qWidth: colcount,
-					qHeight: Math.min(1000, qlik.table(this).qHyperCube.qSize.qcy - rowcount)
-				}];
-				self.backendApi.getData(requestPage).then(function (dataPages) {
-					rowcount += dataPages[0].qMatrix.length;
+					var dimensiot = table.qHyperCube.qDimensionInfo;
+					var measuret = table.qHyperCube.qMeasureInfo;
+					var taulukkoCSVtemp = [];
+					var otsikko = [];
+					for (var i = 0; i < dimensiot.length; i++) { otsikko.push(dimensiot[i].qFallbackTitle) }
+					for (var i = 0; i < measuret.length; i++) { otsikko.push(measuret[i].qFallbackTitle) }
+					taulukkoCSVtemp.push(otsikko.join(","));
 
-					var requestPage = [{
-						qTop: rowcount,
-						qLeft: 0,
-						qWidth: colcount,
-						qHeight: Math.min(1000, qlik.table(self).qHyperCube.qSize.qcy - rowcount)
-					}];
-					self.backendApi.getData(requestPage).then(function (dataPages) {
-						rowcount += dataPages[0].qMatrix.length;
-
-
-						/**
-						 * Tehdään Hypercubesta CSV
-				 		*/
-						var matriisi = qlik.table(self).qHyperCube.qDataPages[0].qMatrix;
-						var dimensiot = qlik.table(self).qHyperCube.qDimensionInfo;
-						var measuret = qlik.table(self).qHyperCube.qMeasureInfo;
-						var taulukkoCSVtemp = [];
-						var otsikko = [];
-						for (var i = 0; i < dimensiot.length; i++) { otsikko.push(dimensiot[i].qFallbackTitle) }
-						for (var i = 0; i < measuret.length; i++) { otsikko.push(measuret[i].qFallbackTitle) }
-						taulukkoCSVtemp.push(otsikko.join(","));
-						console.log(rowcount);
-						var maxFetches = Math.min(3, qlik.table(self).qHyperCube.qDataPages.length);
-
-						for (var h = 0; h < maxFetches; h++) {
-							var matriisi = qlik.table(self).qHyperCube.qDataPages[h].qMatrix;
-							for (var i = 0; i < matriisi.length; i++) {
-								var rivi = [];
-								for (var j = 0; j < matriisi[i].length; j++) {
-									if (matriisi[i][j].qNum == "NaN") {
-										rivi.push('"' + matriisi[i][j].qText + '"');
-									} else {
-										rivi.push('"' + matriisi[i][j].qText.replace(".", ",") + '"');
-									}
+					for (var h = 0; h < table.qHyperCube.qDataPages.length; h++) {
+						var matriisi = table.qHyperCube.qDataPages[h].qMatrix;
+						for (var i = 0; i < matriisi.length; i++) {
+							var rivi = [];
+							for (var j = 0; j < matriisi[i].length; j++) {
+								if (matriisi[i][j].qNum == "NaN") {
+									rivi.push('"' + matriisi[i][j].qText + '"');
+								} else {
+									rivi.push('"' + matriisi[i][j].qText.replace(".", ",") + '"');
 								}
-								taulukkoCSVtemp.push(rivi.join(","));
 							}
+							taulukkoCSVtemp.push(rivi.join(","));
 						}
-
-						var taulukkoCSV = taulukkoCSVtemp.join("\r\n");
-
-
-						/**
-						 * Pusketaan CSV käyttäjälle
-						 */
-
-						var csvBlob = new Blob([taulukkoCSV], { type: 'text/csv' });
+					}
+					var taulukkoCSV = taulukkoCSVtemp.join("\r\n");
 
 
-						if (window.navigator.msSaveOrOpenBlob) {  // IE:tä varten
-							window.navigator.msSaveBlob(csvBlob, 'data.csv');
-						} else {
-							download(csvBlob, "data.CSV", 'text/csv');
-						}
+					/**
+					 * Pusketaan CSV käyttäjälle
+					 */
+
+					var csvBlob = new Blob([taulukkoCSV], { type: 'text/csv' });
 
 
-
-					});
-
+					if (window.navigator.msSaveOrOpenBlob) {  // IE:tä varten
+						window.navigator.msSaveBlob(csvBlob, 'data.csv');
+					} else {
+						download(csvBlob, "data.CSV", 'text/csv');
+					}
 				});
-
 			}
 
-			/**
-			 * Hoitaa excel -exportin
-			 */
 			$scope.exportXLS = function () {
 
-				var self = this;
-				var hypercube = qlik.table(this).qHyperCube;
-				var rowcount = hypercube.qDataPages[0].qMatrix.length;
-				var colcount = hypercube.qDimensionInfo.length + hypercube.qMeasureInfo.length;
+				fetchAllData(this, qlik.table(this), 0, function (table) {
+					/**
+					 * Tehdään hypercubesta taulukko
+					 */
 
-				var requestPage = [{
-					qTop: rowcount,
-					qLeft: 0,
-					qWidth: colcount,
-					qHeight: Math.min(1000, qlik.table(this).qHyperCube.qSize.qcy - rowcount)
-				}];
-				self.backendApi.getData(requestPage).then(function (dataPages) {
-					rowcount += dataPages[0].qMatrix.length;
-
-					var requestPage = [{
-						qTop: rowcount,
-						qLeft: 0,
-						qWidth: colcount,
-						qHeight: Math.min(1000, qlik.table(self).qHyperCube.qSize.qcy - rowcount)
-					}];
-					self.backendApi.getData(requestPage).then(function (dataPages) {
-						rowcount += dataPages[0].qMatrix.length;
+					var dimensiot = table.qHyperCube.qDimensionInfo;
+					var measuret = table.qHyperCube.qMeasureInfo;
+					var taulukko = [];
+					var otsikko = [];
 
 
-						/**
-				 		* Tehdään hypercubesta taulukko
-				 		*/
+					for (var i = 0; i < dimensiot.length; i++) { otsikko.push(dimensiot[i].qFallbackTitle) }
+					for (var i = 0; i < measuret.length; i++) { otsikko.push(measuret[i].qFallbackTitle) }
+					taulukko.push(otsikko);
 
-						var dimensiot = qlik.table(self).qHyperCube.qDimensionInfo;
-						var measuret = qlik.table(self).qHyperCube.qMeasureInfo;
-						var taulukko = [];
-						var otsikko = [];
-
-
-						for (var i = 0; i < dimensiot.length; i++) { otsikko.push(dimensiot[i].qFallbackTitle) }
-						for (var i = 0; i < measuret.length; i++) { otsikko.push(measuret[i].qFallbackTitle) }
-						taulukko.push(otsikko);
-
-						var maxFetches = Math.min(3, qlik.table(self).qHyperCube.qDataPages.length);
-
-						for (var h = 0; h < maxFetches; h++) {
-							var matriisi = qlik.table(self).qHyperCube.qDataPages[h].qMatrix;
-							for (var i = 0; i < matriisi.length; i++) {
-								var rivi = [];
-								for (var j = 0; j < matriisi[i].length; j++) {
-									if (matriisi[i][j].qNum == "NaN") {
-										rivi.push(matriisi[i][j].qText);
-									} else {
-										//rivi.push(parseFloat(matriisi[i][j].qText)); //Antaa NaN jos formatointi on Sensessä väärin
-										rivi.push(matriisi[i][j].qText);
-									}
+					for (var h = 0; h < table.qHyperCube.qDataPages.length; h++) {
+						var matriisi = table.qHyperCube.qDataPages[h].qMatrix;
+						for (var i = 0; i < matriisi.length; i++) {
+							var rivi = [];
+							for (var j = 0; j < matriisi[i].length; j++) {
+								if (matriisi[i][j].qNum == "NaN") {
+									rivi.push(matriisi[i][j].qText);
+								} else {
+									//rivi.push(parseFloat(matriisi[i][j].qText)); //Antaa NaN jos formatointi on Sensessä väärin
+									rivi.push(matriisi[i][j].qText);
 								}
-								taulukko.push(rivi);
 							}
+							taulukko.push(rivi);
 						}
+					}
 
-						/**
-						 * Luodaan Excel
-						 */
-						var workbook = ExcelBuilder.Builder.createWorkbook();
-						var worksheet = workbook.createWorksheet({ name: 'Data' });
-						var stylesheet = workbook.getStyleSheet();
+					/**
+					 * Luodaan Excel
+					 */
+					var workbook = ExcelBuilder.Builder.createWorkbook();
+					var worksheet = workbook.createWorksheet({ name: 'Data' });
+					var stylesheet = workbook.getStyleSheet();
 
-						worksheet.setData(taulukko);
-						workbook.addWorksheet(worksheet);
+					worksheet.setData(taulukko);
+					workbook.addWorksheet(worksheet);
 
-						/**
-						 * Pusketaan Excel käyttäjälle
-						 */
+					/**
+					 * Pusketaan Excel käyttäjälle
+					 */
 
-						ExcelBuilder.Builder.createFile(workbook).then(function (data) {
+					ExcelBuilder.Builder.createFile(workbook).then(function (data) {
 
-							var dataBlob = b64toBlob(data, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-							if (window.navigator.msSaveOrOpenBlob) {  // IE:tä varten
-								window.navigator.msSaveBlob(dataBlob, 'data.xlsx');
-							} else {
-								download(dataBlob, "data.xlsx", 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-							}
-
-						});
-
+						var dataBlob = b64toBlob(data, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+						if (window.navigator.msSaveOrOpenBlob) {  // IE:tä varten
+							window.navigator.msSaveBlob(dataBlob, 'data.xlsx');
+						} else {
+							download(dataBlob, "data.xlsx", 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+						}
 
 					});
 
 				});
-
 			}
 
 			/**
@@ -270,6 +204,42 @@ define(["qlik", "jquery", "text!./style.css", "text!./template.html", "xlsx", ".
 
 				var blob = new Blob(byteArrays, { type: contentType });
 				return blob;
+			}
+
+			/**
+			 * Hakee kaiken datan APIsta
+			 */
+			function fetchAllData(self, table, rowcount, callback) {
+
+				rowcount = typeof rowcount !== 'undefined' ? rowcount : 0;
+
+				var hypercube = table.qHyperCube;
+				if (rowcount == 0) {
+					for (var i = 0; i < hypercube.qDataPages.length; i++) {
+						rowcount += hypercube.qDataPages[i].qMatrix.length; /// Prevents duplication of data
+					}
+				}
+
+				var colcount = hypercube.qDimensionInfo.length + hypercube.qMeasureInfo.length;
+
+				var requestPage = [{
+					qTop: rowcount,
+					qLeft: 0,
+					qWidth: colcount,
+					qHeight: Math.min(1000, table.qHyperCube.qSize.qcy - rowcount)
+				}];
+				self.backendApi.getData(requestPage).then(function (dataPages) {
+					rowcount += dataPages[0].qMatrix.length;
+
+					if (rowcount < hypercube.qSize.qcy) {
+						fetchAllData(self, table, rowcount, callback);
+					}
+
+					if (rowcount >= hypercube.qSize.qcy) {
+						callback(table);
+					}
+
+				});
 			}
 
 		}]
