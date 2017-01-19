@@ -3,7 +3,7 @@
 	"description": "Exports data on the client side",
 	"icon": "extension",
 	"type": "visualization",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"author": "Joel Tolvanen",
 	"homepage": "",
 	"keywords": "qlik-sense, visualization, export",
