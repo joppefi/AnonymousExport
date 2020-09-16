@@ -11,6 +11,7 @@ requirejs.config({
 		}
 	}
 });
+// Kommentti
 
 define(["qlik", "jquery", "text!./style.css", "text!./template.html", "xlsx", "./js/lodash"], function (qlik, $, cssContent, template) {
 	'use strict';
@@ -118,65 +119,33 @@ define(["qlik", "jquery", "text!./style.css", "text!./template.html", "xlsx", ".
 				});
 			}
 
+			// Same as sense-export
+			$scope.getBasePath = function () {
+        var prefix = window.location.pathname.substr(
+          0,
+          window.location.pathname.toLowerCase().lastIndexOf("/sense") + 1
+        );
+        var url = window.location.href;
+        url = url.split("/");
+        return (
+          url[0] +
+          "//" +
+          url[2] +
+          (prefix[prefix.length - 1] === "/"
+            ? prefix.substr(0, prefix.length - 1)
+            : prefix)
+        );
+      };
+
 			$scope.exportXLS = function () {
-
-				fetchAllData(this, qlik.table(this), 0, function (table) {
-					/**
-					 * Tehdään hypercubesta taulukko
-					 */
-
-					var dimensiot = table.qHyperCube.qDimensionInfo;
-					var measuret = table.qHyperCube.qMeasureInfo;
-					var taulukko = [];
-					var otsikko = [];
-
-
-					for (var i = 0; i < dimensiot.length; i++) { otsikko.push(dimensiot[i].qFallbackTitle) }
-					for (var i = 0; i < measuret.length; i++) { otsikko.push(measuret[i].qFallbackTitle) }
-					taulukko.push(otsikko);
-
-					for (var h = 0; h < table.qHyperCube.qDataPages.length; h++) {
-						var matriisi = table.qHyperCube.qDataPages[h].qMatrix;
-						for (var i = 0; i < matriisi.length; i++) {
-							var rivi = [];
-							for (var j = 0; j < matriisi[i].length; j++) {
-								if (matriisi[i][j].qNum == "NaN") {
-									rivi.push(matriisi[i][j].qText);
-								} else {
-									//rivi.push(parseFloat(matriisi[i][j].qText)); //Antaa NaN jos formatointi on Sensessä väärin
-									rivi.push(matriisi[i][j].qText);
-								}
-							}
-							taulukko.push(rivi);
-						}
-					}
-
-					/**
-					 * Luodaan Excel
-					 */
-					var workbook = ExcelBuilder.Builder.createWorkbook();
-					var worksheet = workbook.createWorksheet({ name: 'Data' });
-					var stylesheet = workbook.getStyleSheet();
-
-					worksheet.setData(taulukko);
-					workbook.addWorksheet(worksheet);
-
-					/**
-					 * Pusketaan Excel käyttäjälle
-					 */
-
-					ExcelBuilder.Builder.createFile(workbook).then(function (data) {
-
-						var dataBlob = b64toBlob(data, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-						if (window.navigator.msSaveOrOpenBlob) {  // IE:tä varten
-							window.navigator.msSaveBlob(dataBlob, 'data.xlsx');
-						} else {
-							download(dataBlob, "data.xlsx", 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-						}
-
-					});
-
-				});
+				$scope.ext.model
+          .exportData("OOXML", "/qHyperCubeDef", "filename", true)
+          .then(function (file) {
+              var qUrl = file.result ? file.result.qUrl : file.qUrl;
+              var link = $scope.getBasePath() + qUrl;
+              console.log(link);
+              window.open(link);
+          });
 			}
 
 			/**
