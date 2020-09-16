@@ -69,8 +69,6 @@ define(["qlik", "jquery", "text!./style.css", "text!./template.html", "xlsx", ".
 		},
 		controller: ['$scope', function ($scope) {
 
-
-
 			$scope.exportCSV = function () {
 
 				$scope.ext.model
@@ -81,8 +79,58 @@ define(["qlik", "jquery", "text!./style.css", "text!./template.html", "xlsx", ".
               console.log(link);
               window.open(link);
           });
-
 			}
+
+			$scope.exportCSVclientSide = function () {
+        console.log("Exporting CSV on client side");
+        fetchAllData(this, qlik.table(this), 0, function (table) {
+          /**
+           * Tehdään Hypercubesta CSV
+           */
+
+          var dimensiot = table.qHyperCube.qDimensionInfo;
+          var measuret = table.qHyperCube.qMeasureInfo;
+          var taulukkoCSVtemp = [];
+          var otsikko = [];
+          for (var i = 0; i < dimensiot.length; i++) {
+            otsikko.push(dimensiot[i].qFallbackTitle);
+          }
+          for (var i = 0; i < measuret.length; i++) {
+            otsikko.push(measuret[i].qFallbackTitle);
+          }
+          taulukkoCSVtemp.push(otsikko.join(","));
+
+          for (var h = 0; h < table.qHyperCube.qDataPages.length; h++) {
+            var matriisi = table.qHyperCube.qDataPages[h].qMatrix;
+            for (var i = 0; i < matriisi.length; i++) {
+              var rivi = [];
+              for (var j = 0; j < matriisi[i].length; j++) {
+                if (matriisi[i][j].qNum == "NaN") {
+                  rivi.push('"' + matriisi[i][j].qText + '"');
+                } else {
+                  rivi.push('"' + matriisi[i][j].qText.replace(".", ",") + '"');
+                }
+              }
+              taulukkoCSVtemp.push(rivi.join(","));
+            }
+          }
+          var taulukkoCSV = taulukkoCSVtemp.join("\r\n");
+
+          /**
+           * Pusketaan CSV käyttäjälle
+           */
+          var csvBlob = new Blob(["\ufeff", taulukkoCSV], {
+            type: "text/csv;charset=utf-8",
+          });
+
+          if (window.navigator.msSaveOrOpenBlob) {
+            // IE:tä varten
+            window.navigator.msSaveBlob(csvBlob, "data.csv");
+          } else {
+            download(csvBlob, "data.CSV", "text/csv;charset=utf-8");
+          }
+        });
+      };
 
 			// Same as sense-export
 			$scope.getBasePath = function () {
