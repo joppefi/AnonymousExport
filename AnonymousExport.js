@@ -143,12 +143,15 @@ define([
           });
         };
 
-        // Same as sense-export
         $scope.getBasePath = function () {
-          var prefix = window.location.pathname.substr(
-            0,
-            window.location.pathname.toLowerCase().lastIndexOf("/sense") + 1
+          var pathname = window.location.pathname;
+          // Tsekataan myös /extensions/ polku mashupeja varten, sillä oletuksella että /sense ja /extensions eivät voi esiintyä samassa url:ssa
+          var prefixEndIndex = Math.max(
+            pathname.toLowerCase().lastIndexOf("/sense"),
+            pathname.toLowerCase().lastIndexOf("/extensions")
           );
+
+          var prefix = pathname.substr(0, prefixEndIndex + 1);
           var url = window.location.href;
           url = url.split("/");
           return (
